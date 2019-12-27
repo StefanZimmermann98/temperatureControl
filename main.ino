@@ -53,7 +53,7 @@ void setup() {
     if (isnan(temperature) || isnan(humidity)){
       Serial.print("nö");
     } else {
-      sender.begin("http://sensors.backendz.de/measure.php?temp="+String(temperature)+"&hum="+String(humidity));
+      sender.begin("http://.../measure.php?temp="+String(temperature)+"&hum="+String(humidity));
       sender.GET();
       Serial.println(sender.getString());
       delay(2000);
