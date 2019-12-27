@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <ESP8266HTTPClient.h>
 #include <DHT.h>
 
 //Pin Definitionen
@@ -18,6 +19,7 @@
   int d10 = 1;
   
 ESP8266WebServer server(80);
+HTTPClient sender;
 DHT dht(d6,DHT22);
 
 // Custom Definitionen
@@ -46,23 +48,17 @@ void setup() {
     Serial.println("DNS online");
   }
 
-  server.onNotFound([] () {
-    server.send(404, "text/plain","Link wurde nicht gefunden!");
-  });
-
-  server.on("/", []() {
-    float temperature = dht.readTemperature();
-    float humidity = dht.readHumidity();
+  float temperature = dht.readTemperature();
+  float humidity = dht.readHumidity();
     if (isnan(temperature) || isnan(humidity)){
-      server.send(200,"text/plain","error");
+      Serial.print("nö");
     } else {
-      String s = "{'temperature':" + String(temperature) + ",'humidity':" + String(humidity) + "}";
-      server.send(200,"text/plain",s);
+      sender.begin("http://sensors.backendz.de/measure.php?temp="+String(temperature)+"&hum="+String(humidity));
+      sender.GET();
+      Serial.println(sender.getString());
+      delay(2000);
+      sender.end();
     }
-    
-  });
-  
-  server.begin();
 
   
 }
@@ -70,13 +66,17 @@ void setup() {
 
 
 void loop() {
-  delay(2000);
+  delay(1800000);
   float temperature = dht.readTemperature();
-    float humidity = dht.readHumidity();
+  float humidity = dht.readHumidity();
     if (isnan(temperature) || isnan(humidity)){
       Serial.print("nö");
     } else {
-      Serial.println(String(temperature));
+      sender.begin("http://.../measure.php?temp="+String(temperature)+"&hum="+String(humidity));
+      sender.GET();
+      Serial.println(sender.getString());
+      delay(2000);
+      sender.end();
     }
   server.handleClient();
 }
